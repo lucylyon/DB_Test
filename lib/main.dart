@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'todo.dart';
 import 'databaseHelper.dart';
-
-//https://www.javacodegeeks.com/2020/06/using-sqlite-in-flutter-tutorial.html
-// flutter/sqlite tutorial
+import 'todo.dart';
 
 void main() {
   runApp(MyApp());
@@ -22,6 +19,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
 
@@ -33,6 +31,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   TextEditingController textController = new TextEditingController();
+
   List<Todo> taskList = new List();
 
   @override
@@ -71,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 IconButton(
                   icon: Icon(Icons.add),
-                  onPressed: null,
+                  onPressed: _addToDb,
                 )
               ],
             ),
@@ -85,6 +84,10 @@ class _MyHomePageState extends State<MyHomePage> {
                   return ListTile(
                     title: Text(taskList[index].title),
                     leading: Text(taskList[index].id.toString()),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () => _deleteTask(taskList[index].id),
+                    ),
                   );
                 }),
               ),
@@ -95,4 +98,18 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  void _deleteTask(int id) async {
+    await DatabaseHelper.instance.delete(id);
+    setState(() {
+      taskList.removeWhere((element) => element.id == id);
+    });
+  }
+
+  void _addToDb() async {
+    String task = textController.text;
+    var id = await DatabaseHelper.instance.insert(Todo(title: task));
+    setState(() {
+      taskList.insert(0, Todo(id: id, title: task));
+    });
+  }
 }
